@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+    h1, h2 {
+      color: #1e90ff;
+    }
+    .container {
+      width: 80%;
+      max-width: 1200px;
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #444;
+      border-radius: 5px;
+      background-color: #1c1c1c;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .button-group {
+      margin: 20px 0;
+    }
+    .button-group button {
+      background-color: #1e90ff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+    .button-group button:hover {
+      background-color: #3742fa;
+    }
+    .form-group {
+      margin: 10px 0;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #444;
+      border-radius: 5px;
+      background-color: #2c2c2c;
+      color: #f0f0f0;
+    }
+    .loading {
+      text-align: center;
+    }
+    .feedback {
+      margin: 10px 0;
+      color: #1e90ff;
+    }
+    .profile, .template, .candidate, .training, .leave-request {
+      border: 1px solid #444;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      background-color: #2c2c2c;
+    }
+    .timeline {
+      margin-top: 10px;
+      padding-left: 10px;
+      border-left: 2px solid #1e90ff;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.6);
+    }
+    .modal-content {
+      background-color: #1c1c1c;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .close:hover, .close:focus {
+      color: #f0f0f0;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .response-message {
+      margin: 10px 0;
+      color: #1e90ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Employee Data Management System</h1>
+    <p>This system allows you to manage employee data including their skills, availability, department, position, location, project history, and certifications.</p>
+    
+    <div class="button-group">
+      <button onclick="openModal('addEmployeeModal')">Add New Employee</button>
+      <button onclick="loadEmployees()">Load Employees</button>
+    </div>
+    <div id="employees"></div>
+  </div>
+
+  <div class="container">
+    <h1>Recruitment System</h1>
+    <p>This system helps you manage recruitment processes, including adding new requirement templates and candidates, and filtering candidates based on qualifications.</p>
+    
+    <div class="button-group">
+      <button onclick="openModal('addTemplateModal')">Add New Requirement Template</button>
+      <button onclick="loadTemplates()">Load Templates</button>
+    </div>
+    <div id="templates"></div>
+
+    <div class="button-group">
+      <button onclick="openModal('addCandidateModal')">Add New Candidate</button>
+      <button onclick="loadCandidates()">Load Candidates</button>
+      <button onclick="filterCandidates()">Filter Candidates</button>
+    </div>
+    <div id="candidates"></div>
+    <div id="filteredCandidates"></div>
+  </div>
+
+  <div class="container">
+    <h1>Learning and Development</h1>
+    <p>This system provides AI-driven training recommendations and allows employees to request new training and add certifications.</p>
+    
+    <div class="button-group">
+      <button onclick="loadTrainingRecommendations()">Get Training Recommendations</button>
+    </div>
+    <div id="trainingRecommendations"></div>
+    
+    <div class="button-group">
+      <button onclick="openModal('addCertificationModal')">Add New Certification</button>
+      <button onclick="openModal('addTrainingRequestModal')">Add New Training Request</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Leave Application and Admin Panel</h1>
+    <p>This system allows employees to submit leave applications and admins to manage leave requests.</p>
+
+    <form id="leaveForm">
+      <h2>Leave Application Form</h2>
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <div class="form-group">
+        <label for="leaveType">Leave Type:</label>
+        <input type="text" id="leaveType" name="leaveType" required>
+      </div>
+      <div class="form-group">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate" required>
+      </div>
+      <div class="form-group">
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate" required>
+      </div>
+      <div class="button-group">
+        <button type="button" onclick="submitForm()">Submit</button>
+        <button type="button" onclick="loadRequests()">Show Leave Status</button>
+      </div>
+      <div id="submitResponse" class="response-message"></div>
+    </form>
+
+    <hr>
+
+    <h2>Leave Requests</h2>
+    <table id="leaveRequestsTable" class="leave-request">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Leave Type</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="addEmployeeModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('addEmployeeModal')">&times;</span>
+      <h2>Add New Employee</h2>
+      <div class="form-group">
+        <label for="employeeName">Name:</label>
+        <input type="text" id="employeeName" required>
+      </div>
+      <div class="form-group">
+        <label for="employeeSkills">Skills (comma-separated):</label>
+        <input type="text" id="employeeSkills" required>
+      </div>
+      <div class="form-group">
+        <label for="employeeAvailability">Availability:</label>
+        <input type="number" id="employeeAvailability" required>
+      </div>
+      <div class="form-group">
+        <label for="employeeDepartment">Department:</label>
+        <input type="text" id="employeeDepartment" required>
+      </div>
+      <div class="form-group">
+        <label for="employeePosition">Position:</label>
+        <input type="text" id="employeePosition" required>
+      </div>
+      <div class="form-group">
+        <label for="employeeLocation">Location:</label>
+        <input type="text" id="employeeLocation" required>
+      </div>
+      <div class="form-group">
+        <label for="employeeProjectHistory">Project History:</label>
+        <textarea id="employeeProjectHistory" rows="3" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="employeeCertifications">Certifications (comma-separated):</label>
+        <input type="text" id="employeeCertifications" required>
+      </div>
+      <div class="button-group">
+        <button type="button" onclick="addEmployee()">Add Employee</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addTemplateModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('addTemplateModal')">&times;</span>
+      <h2>Add New Requirement Template</h2>
+      <div class="form-group">
+        <label for="templateName">Template Name:</label>
+        <input type="text" id="templateName" required>
+      </div>
+      <div class="form-group">
+        <label for="templateDescription">Description:</label>
+        <textarea id="templateDescription" rows="3" required></textarea>
+      </div>
+      <div class="button-group">
+        <button type="button" onclick="addTemplate()">Add Template</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addCandidateModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('addCandidateModal')">&times;</span>
+      <h2>Add New Candidate</h2>
+      <div class="form-group">
+        <label for="candidateName">Name:</label>
+        <input type="text" id="candidateName" required>
+      </div>
+      <div class="form-group">
+        <label for="candidateSkills">Skills (comma-separated):</label>
+        <input type="text" id="candidateSkills" required>
+      </div>
+      <div class="form-group">
+        <label for="candidateExperience">Experience:</label>
+        <input type="number" id="candidateExperience" required>
+      </div>
+      <div class="form-group">
+        <label for="candidateEducation">Education:</label>
+        <input type="text" id="candidateEducation" required>
+      </div>
+      <div class="form-group">
+        <label for="candidateLocation">Location:</label>
+        <input type="text" id="candidateLocation" required>
+      </div>
+      <div class="button-group">
+        <button type="button" onclick="addCandidate()">Add Candidate</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addCertificationModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('addCertificationModal')">&times;</span>
+      <h2>Add New Certification</h2>
+      <div class="form-group">
+        <label for="certificationName">Certification Name:</label>
+        <input type="text" id="certificationName" required>
+      </div>
+      <div class="form-group">
+        <label for="certificationAuthority">Certification Authority:</label>
+        <input type="text" id="certificationAuthority" required>
+      </div>
+      <div class="form-group">
+        <label for="certificationDate">Certification Date:</label>
+        <input type="date" id="certificationDate" required>
+      </div>
+      <div class="button-group">
+        <button type="button" onclick="addCertification()">Add Certification</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addTrainingRequestModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('addTrainingRequestModal')">&times;</span>
+      <h2>Add New Training Request</h2>
+      <div class="form-group">
+        <label for="trainingRequestName">Training Name:</label>
+        <input type="text" id="trainingRequestName" required>
+      </div>
+      <div class="form-group">
+        <label for="trainingRequestDescription">Description:</label>
+        <textarea id="trainingRequestDescription" rows="3" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="trainingRequestDate">Preferred Date:</label>
+        <input type="date" id="trainingRequestDate" required>
+      </div>
+      <div class="button-group">
+        <button type="button" onclick="addTrainingRequest()">Add Training Request</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal(modalId) {
+      document.getElementById(modalId).style.display = "block";
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = "none";
+    }
+
+    function addEmployee() {
+      const employee = {
+        name: document.getElementById('employeeName').value,
+        skills: document.getElementById('employeeSkills').value,
+        availability: document.getElementById('employeeAvailability').value,
+        department: document.getElementById('employeeDepartment').value,
+        position: document.getElementById('employeePosition').value,
+        location: document.getElementById('employeeLocation').value,
+        projectHistory: document.getElementById('employeeProjectHistory').value,
+        certifications: document.getElementById('employeeCertifications').value
+      };
+      google.script.run.withSuccessHandler((message) => {
+        document.getElementById('employeeFeedback').innerText = message;
+        clearEmployeeForm();
+        closeModal('addEmployeeModal');
+        loadEmployees();
+      }).addEmployee(employee);
+    }
+
+    function clearEmployeeForm() {
+      document.getElementById('employeeName').value = '';
+      document.getElementById('employeeSkills').value = '';
+      document.getElementById('employeeAvailability').value = '';
+      document.getElementById('employeeDepartment').value = '';
+      document.getElementById('employeePosition').value = '';
+      document.getElementById('employeeLocation').value = '';
+      document.getElementById('employeeProjectHistory').value = '';
+      document.getElementById('employeeCertifications').value = '';
+    }
+
+    function loadEmployees() {
+      document.getElementById('employees').innerHTML = '<p class="loading">Loading...</p>';
+      google.script.run.withSuccessHandler(displayEmployees).getEmployees();
+    }
+
+    function displayEmployees(employees) {
+      var output = '<h2>Employees</h2>';
+      employees.forEach(function(employee) {
+        output += `<div class="profile">
+          <h3>${employee.name}</h3>
+          <p><strong>Skills:</strong> ${employee.skills}</p>
+          <p><strong>Availability:</strong> ${employee.availability}</p>
+          <p><strong>Department:</strong> ${employee.department}</p>
+          <p><strong>Position:</strong> ${employee.position}</p>
+          <p><strong>Location:</strong> ${employee.location}</p>
+          <p><strong>Certifications:</strong> ${employee.certifications}</p>
+          <div class="timeline">
+            <h4>Project History</h4>
+            ${employee.projectHistory.split(';').map(project => `<p>${project}</p>`).join('')}
+          </div>
+        </div>`;
+      });
+      document.getElementById('employees').innerHTML = output;
+    }
+
+    function addRequirementTemplate() {
+      const template = {
+        position: document.getElementById('templatePosition').value,
+        requirements: document.getElementById('templateRequirements').value
+      };
+      google.script.run.withSuccessHandler((message) => {
+        document.getElementById('templateFeedback').innerText = message;
+        clearTemplateForm();
+        closeModal('addTemplateModal');
+        loadTemplates();
+      }).addRequirementTemplate(template);
+    }
+
+    function clearTemplateForm() {
+      document.getElementById('templatePosition').value = '';
+      document.getElementById('templateRequirements').value = '';
+    }
+
+    function loadTemplates() {
+      document.getElementById('templates').innerHTML = '<p class="loading">Loading...</p>';
+      google.script.run.withSuccessHandler(displayTemplates).getRequirementTemplates();
+    }
+
+    function displayTemplates(templates) {
+      var output = '<h2>Requirement Templates</h2>';
+      templates.forEach(function(template) {
+        output += `<div class="template">
+          <h3>Position: ${template.position}</h3>
+          <p><strong>Requirements:</strong> ${template.requirements}</p>
+        </div>`;
+      });
+      document.getElementById('templates').innerHTML = output;
+    }
+
+    function addCandidate() {
+      const candidate = {
+        name: document.getElementById('candidateName').value,
+        resume: document.getElementById('candidateResume').value
+      };
+      google.script.run.withSuccessHandler((message) => {
+        document.getElementById('candidateFeedback').innerText = message;
+        clearCandidateForm();
+        closeModal('addCandidateModal');
+        loadCandidates();
+      }).addCandidate(candidate);
+    }
+
+    function clearCandidateForm() {
+      document.getElementById('candidateName').value = '';
+      document.getElementById('candidateResume').value = '';
+    }
+
+    function loadCandidates() {
+      document.getElementById('candidates').innerHTML = '<p class="loading">Loading...</p>';
+      google.script.run.withSuccessHandler(displayCandidates).getCandidates();
+    }
+
+    function displayCandidates(candidates) {
+      var output = '<h2>Candidates</h2>';
+      candidates.forEach(function(candidate) {
+        output += `<div class="candidate">
+          <h3>Name: ${candidate.name}</h3>
+          <p><strong>Resume:</strong> ${candidate.resume}</p>
+        </div>`;
+      });
+      document.getElementById('candidates').innerHTML = output;
+    }
+
+    function filterCandidates() {
+      document.getElementById('filteredCandidates').innerHTML = '<p class="loading">Loading...</p>';
+      google.script.run.withSuccessHandler(displayFilteredCandidates).getQualifiedCandidates();
+    }
+
+    function displayFilteredCandidates(candidates) {
+      var output = '<h2>Qualified Candidates</h2>';
+      if (candidates.length === 0) {
+        output += '<p>No candidates match the criteria.</p>';
+      } else {
+        candidates.forEach(function(candidate) {
+          output += `<div class="candidate">
+            <h3>Name: ${candidate.name}</h3>
+            <p><strong>Score:</strong> ${candidate.score}</p>
+          </div>`;
+        });
+      }
+
+      document.getElementById('filteredCandidates').innerHTML = output;
+    }
+
+    function loadTrainingRecommendations() {
+      document.getElementById('trainingRecommendations').innerHTML = '<p class="loading">Loading...</p>';
+      google.script.run.withSuccessHandler(displayTrainingRecommendations).getTrainingRecommendations();
+    }
+
+    function displayTrainingRecommendations(recommendations) {
+      var output = '<h2>AI-Driven Training Recommendations</h2>';
+      if (recommendations.length === 0) {
+        output += '<p>No training recommendations available.</p>';
+      } else {
+        recommendations.forEach(function(recommendation) {
+          output += `<div class="training">
+            <h3>Recommendation: ${recommendation.title}</h3>
+            <p>${recommendation.description}</p>
+          </div>`;
+        });
+      }
+      document.getElementById('trainingRecommendations').innerHTML = output;
+    }
+
+    function addCertification() {
+      const certification = {
+        name: document.getElementById('certificationName').value,
+        employeeName: document.getElementById('certificationEmployeeName').value,
+        expirationDate: document.getElementById('certificationExpirationDate').value
+      };
+      google.script.run.withSuccessHandler((message) => {
+        document.getElementById('certificationFeedback').innerText = message;
+        clearCertificationForm();
+        closeModal('addCertificationModal');
+        loadCertifications();
+      }).addCertification(certification);
+    }
+
+    function clearCertificationForm() {
+      document.getElementById('certificationName').value = '';
+      document.getElementById('certificationEmployeeName').value = '';
+      document.getElementById('certificationExpirationDate').value = '';
+    }
+
+    function submitTrainingRequest() {
+      const request = {
+        employeeName: document.getElementById('trainingRequestEmployee').value,
+        details: document.getElementById('trainingRequestDetails').value
+      };
+      google.script.run.withSuccessHandler((message) => {
+        document.getElementById('trainingRequestFeedback').innerText = message;
+        clearTrainingRequestForm();
+        closeModal('addTrainingRequestModal');
+      }).submitTrainingRequest(request);
+    }
+
+    function clearTrainingRequestForm() {
+      document.getElementById('trainingRequestEmployee').value = '';
+      document.getElementById('trainingRequestDetails').value = '';
+    }
+
+    // Load leave requests into the table
+    function loadRequests() {
+      google.script.run.withSuccessHandler(function(requests) {
+        console.log(requests); // Debugging: log the requests to the console
+        
+        // Check if data is returned correctly
+        if (requests.length === 0) {
+          console.log("No data returned");
+          return;
+        }
+
+        // Clear previous table data
+        const table = $('#leaveRequestsTable').DataTable();
+        table.clear();
+
+        // Add new data to the table
+        table.rows.add(requests.map(request => [
+          request.name,
+          request.email,
+          request.leaveType,
+          request.startDate,
+          request.endDate,
+          request.status
+        ])).draw();
+      }).getLeaveRequests();
+    }
+
+    // Submit leave request form
+    function submitForm() {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const leaveType = document.getElementById('leaveType').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const form = document.getElementById('leaveForm');
+      const formData = new FormData(form);
+      const data = {};
+      formData.forEach((value, key) => { data[key] = value; });
+      
+      google.script.run.withSuccessHandler(function(response) {
+        document.getElementById('submitResponse').innerText = response;
+        form.reset();
+        // Refresh the requests list
+        loadRequests();
+      }).submitLeaveRequest(data);
+      const responseMessage = document.getElementById('submitResponse');
+      responseMessage.innerText = 'Leave application submitted successfully!';
+    }
+
+    // Handle request approval or rejection
+    function handleRequest(action, email) {
+      google.script.run.withSuccessHandler(function(response) {
+        document.getElementById('adminResponse').innerText = response;
+        // Refresh the requests list
+        loadRequests();
+      }).handleRequest(action, email);
+    }
+
+    // Initialize DataTables
+    $(document).ready(function() {
+      $('#leaveRequestsTable').DataTable();
+    });
+  </script>
+</body>
+</html>
